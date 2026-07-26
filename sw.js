@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sci-rio3-v1';
+const CACHE_NAME = 'sci-rio3-v2';
 const APP_SHELL = [
   './',
   './index.html',

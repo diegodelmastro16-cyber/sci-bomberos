@@ -171,8 +171,24 @@
         .btn-modal-save { background-color: var(--accent-green); color: black; border: none; padding: 10px; border-radius: 6px; font-weight: bold; flex: 1; cursor: pointer; }
         .btn-modal-cancel { background-color: #444; color: white; border: none; padding: 10px; border-radius: 6px; flex: 1; cursor: pointer; }
 
+        .print-field-value { display: none; }
+        .save-indicator {
+            position: fixed; right: 12px; bottom: 12px; z-index: 900;
+            background: rgba(18,18,18,.92); color: #9ee7aa; border: 1px solid #3f6f48;
+            border-radius: 999px; padding: 7px 11px; font-size: .72rem; font-weight: bold;
+            opacity: 0; pointer-events: none; transition: opacity .2s ease;
+        }
+        .save-indicator.visible { opacity: 1; }
+
         @media print {
             body { background-color: white !important; color: black !important; padding: 0; }
+            .save-indicator, .modal { display: none !important; }
+            input.print-prepared, select.print-prepared, textarea.print-prepared { display: none !important; }
+            .print-field-value {
+                display: block !important; min-height: 1.1em; padding: 8px 10px;
+                border: 1px solid #aaa; border-radius: 4px; background: #fff; color: #000;
+                font-size: 1rem; white-space: pre-wrap; overflow-wrap: anywhere;
+            }
             .card { background-color: white !important; border: 1px solid #000 !important; box-shadow: none !important; color: black !important; page-break-inside: avoid; }
             h1 { color: black !important; border-bottom: 2px solid #000 !important; }
             .card-title { color: black !important; border-left: 4px solid #000 !important; }
@@ -354,6 +370,8 @@
         </div>
     </div>
 </div>
+
+<div id="save-indicator" class="save-indicator" aria-live="polite">Guardado automático ✓</div>
 
 <script>
     let datos = { pisos: 5, subsuelos: 0, deptos: 3, foco: 1 };
@@ -623,7 +641,131 @@
         document.getElementById('cronometro-general').innerText = (min < 10 ? '0' + min : min) + ':' + (seg < 10 ? '0' + seg : seg);
     }
 
-    function descargarReportePDF() { window.print(); }
+    const STORAGE_KEY = 'sci-rio3-intervencion-v2';
+    let guardadoTimer = null;
+
+    function prepararCamposParaImpresion() {
+        limpiarCamposDeImpresion();
+        document.querySelectorAll('input, select, textarea').forEach(function (control) {
+            if (control.closest('.modal')) return;
+            const texto = control.tagName === 'SELECT'
+                ? (control.options[control.selectedIndex]?.text || '')
+                : control.value;
+            const salida = document.createElement('div');
+            salida.className = 'print-field-value';
+            salida.textContent = texto || ' ';
+            control.classList.add('print-prepared');
+            control.insertAdjacentElement('afterend', salida);
+        });
+    }
+
+    function limpiarCamposDeImpresion() {
+        document.querySelectorAll('.print-field-value').forEach(function (el) { el.remove(); });
+        document.querySelectorAll('.print-prepared').forEach(function (el) { el.classList.remove('print-prepared'); });
+    }
+
+    function descargarReportePDF() {
+        prepararCamposParaImpresion();
+        setTimeout(function () { window.print(); }, 80);
+    }
+
+    window.addEventListener('beforeprint', prepararCamposParaImpresion);
+    window.addEventListener('afterprint', limpiarCamposDeImpresion);
+
+    function capturarEstadoControles() {
+        const estado = {};
+        document.querySelectorAll('input[id], select[id], textarea[id], button[id], span[id], div[id]').forEach(function (el) {
+            if (!el.id || el.closest('.modal')) return;
+            const item = {
+                tag: el.tagName,
+                className: el.className,
+                disabled: Boolean(el.disabled),
+                style: el.getAttribute('style') || ''
+            };
+            if ('value' in el) item.value = el.value;
+            if (['BUTTON','SPAN','DIV'].includes(el.tagName)) item.html = el.innerHTML;
+            estado[el.id] = item;
+        });
+        return estado;
+    }
+
+    function guardarEstado() {
+        try {
+            const estado = {
+                version: 2,
+                datos: datos,
+                horaInicio: horaInicio ? horaInicio.getTime() : null,
+                conteoMoviles: conteoMoviles,
+                conteoBrigadas: conteoBrigadas,
+                listaNombresBrigadas: listaNombresBrigadas,
+                registroPersonalMoviles: registroPersonalMoviles,
+                brigadasEnInterior: brigadasEnInterior,
+                movilesHTML: document.getElementById('contenedor-moviles').innerHTML,
+                brigadasHTML: document.getElementById('contenedor-brigadas').innerHTML,
+                busquedaHTML: document.getElementById('registro-busqueda-completo').innerHTML,
+                controles: capturarEstadoControles()
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+            const indicador = document.getElementById('save-indicator');
+            indicador.classList.add('visible');
+            clearTimeout(guardadoTimer);
+            guardadoTimer = setTimeout(function () { indicador.classList.remove('visible'); }, 900);
+        } catch (error) {
+            console.error('No se pudo guardar la intervención:', error);
+        }
+    }
+
+    function restaurarEstado() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return false;
+            const estado = JSON.parse(raw);
+            if (!estado || estado.version !== 2) return false;
+
+            datos = estado.datos || datos;
+            conteoMoviles = estado.conteoMoviles || 0;
+            conteoBrigadas = estado.conteoBrigadas || { incendio: 0, busqueda: 0 };
+            listaNombresBrigadas = estado.listaNombresBrigadas || [];
+            registroPersonalMoviles = estado.registroPersonalMoviles || {};
+            brigadasEnInterior = estado.brigadasEnInterior || {};
+            horaInicio = estado.horaInicio ? new Date(estado.horaInicio) : null;
+
+            document.getElementById('contenedor-moviles').innerHTML = estado.movilesHTML || '';
+            document.getElementById('contenedor-brigadas').innerHTML = estado.brigadasHTML || '';
+            document.getElementById('registro-busqueda-completo').innerHTML = estado.busquedaHTML || '';
+
+            Object.entries(estado.controles || {}).forEach(function ([id, item]) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if ('value' in item && 'value' in el) el.value = item.value;
+                if ('html' in item && ['BUTTON','SPAN','DIV'].includes(el.tagName)) el.innerHTML = item.html;
+                if (item.className !== undefined) el.className = item.className;
+                if ('disabled' in item && 'disabled' in el) el.disabled = item.disabled;
+                if (item.style !== undefined) el.setAttribute('style', item.style);
+            });
+
+            if (horaInicio && !document.getElementById('btn-fin-emergencia').disabled) {
+                clearInterval(intervaloCronometro);
+                intervaloCronometro = setInterval(actualizarCronometro, 1000);
+                actualizarCronometro();
+            }
+            return true;
+        } catch (error) {
+            console.error('No se pudo restaurar la intervención:', error);
+            return false;
+        }
+    }
+
+    function programarGuardado() {
+        clearTimeout(programarGuardado.timer);
+        programarGuardado.timer = setTimeout(guardarEstado, 150);
+    }
+
+    document.addEventListener('input', programarGuardado);
+    document.addEventListener('change', programarGuardado);
+    document.addEventListener('click', function (evento) {
+        if (evento.target.closest('button')) setTimeout(guardarEstado, 30);
+    });
 
     // Eventos de los contadores: más confiables en Safari/iOS que los onclick embebidos.
     document.querySelectorAll('.counter-btn[data-campo]').forEach(function (boton) {
@@ -633,7 +775,10 @@
         });
     });
 
-    actualizarUI();
+    if (!restaurarEstado()) {
+        actualizarUI();
+        guardarEstado();
+    }
 </script>
 
 
