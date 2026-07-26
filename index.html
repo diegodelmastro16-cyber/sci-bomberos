@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SCI - Bomberos Río Tercero</title>
+    
+    <!-- CONFIGURACIÓN PWA PARA IPHONE Y ANDROID -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SCI Río 3">
+    <meta name="theme-color" content="#121212">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/icon-180.png">
+
+
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --accent-red: #ff3b30;
+            --accent-orange: #ff9500;
+            --accent-green: #34c759;
+            --accent-blue: #007aff;
+            --accent-purple: #af52de;
+            --border-color: #444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; box-sizing: border-box;
+            user-select: none;
+        }
+
+        .container { max-width: 600px; margin: 0 auto; }
+
+        h1 {
+            text-align: center; font-size: 1.3rem; color: var(--accent-red);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
+            border-bottom: 2px solid var(--border-color); padding-bottom: 10px;
+        }
+
+        .card {
+            background-color: var(--card-bg); border-radius: 12px; padding: 15px;
+            margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.05rem; font-weight: bold; margin-bottom: 15px; color: #fff;
+            display: flex; justify-content: space-between; align-items: center;
+            border-left: 4px solid var(--accent-blue); padding-left: 8px;
+        }
+
+        .card-title.red-title { border-left-color: var(--accent-red); }
+        .card-title.orange-title { border-left-color: var(--accent-orange); }
+        .card-title.purple-title { border-left-color: var(--accent-purple); }
+
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-size: 0.85rem; color: #ddd; font-weight: bold; }
+        
+        input[type="text"], select, input[type="number"], .counter-value {
+            width: 100%; padding: 12px; background-color: #2a2a2a !important; border: 1px solid #555 !important;
+            border-radius: 6px; color: #ffffff !important; font-size: 1rem; box-sizing: border-box;
+            -webkit-text-fill-color: #ffffff !important; opacity: 1 !important;
+        }
+        
+        .counter-container {
+            display: flex; align-items: center; justify-content: space-between;
+            background-color: #2a2a2a; border-radius: 8px; padding: 4px; border: 1px solid #555;
+        }
+
+        .counter-btn {
+            background-color: #444; color: white; border: none;
+            width: 45px; height: 45px; font-size: 1.5rem; font-weight: bold; border-radius: 6px; cursor: pointer;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .counter-btn.btn-foco { background-color: #551a1a; color: var(--accent-red); }
+        .counter-value { font-size: 1.3rem; font-weight: bold; width: 60px; text-align: center; border: none !important; }
+
+        .safety-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        
+        .live-safety-bar {
+            background-color: #2a1111; border: 2px solid var(--accent-red); border-radius: 12px;
+            padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .live-safety-bar.total-scene { background-color: #11233d; border-color: var(--accent-blue); }
+        .live-safety-label { font-size: 0.8rem; font-weight: bold; color: #fff; text-transform: uppercase; margin-bottom: 5px; }
+        .live-safety-count { font-size: 1.6rem; font-weight: 900; color: #fff; font-family: monospace; }
+
+        .totals-row { display: flex; justify-content: space-between; background-color: #121212; padding: 10px; border-radius: 8px; border: 1px dashed #555; margin-top: 10px; }
+        .total-item { font-size: 0.9rem; font-weight: bold; color: var(--accent-green); }
+
+        .directives-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .dir-box { padding: 10px; border-radius: 8px; display: flex; flex-direction: column; border-left: 5px solid; }
+        .dir-box .label { font-size: 0.75rem; text-transform: uppercase; font-weight: bold; color: #fff; margin-bottom: 4px; }
+        .dir-box .value { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        
+        .border-green { background-color: #1a3c1e; border-left-color: var(--accent-green); }
+        .border-blue { background-color: #16325c; border-left-color: var(--accent-blue); }
+
+        .time-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background-color: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #444;
+        }
+        .time-label { font-size: 0.9rem; font-weight: 500; color: #fff; }
+        
+        .time-btn {
+            background-color: var(--accent-blue); color: white; border: none;
+            padding: 10px 14px; font-size: 0.85rem; font-weight: bold; border-radius: 6px; cursor: pointer; min-width: 105px;
+        }
+        .time-btn.active { 
+            background-color: #111 !important; border: 2px solid #555 !important; 
+            color: var(--accent-green) !important; font-weight: bold; cursor: not-allowed;
+        }
+        
+        .print-time-text { display: none; font-weight: bold; font-size: 1rem; color: #000; }
+
+        .main-timer { font-size: 1.1rem; color: var(--accent-orange); font-weight: bold; font-family: monospace; background-color: #121212; padding: 3px 8px; border-radius: 4px; border: 1px solid #444; }
+
+        .btn-add-generic {
+            width: 100%; padding: 12px; font-size: 0.9rem; font-weight: bold; border: none; border-radius: 8px;
+            cursor: pointer; color: white; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-add-movil { background-color: #007aff; }
+        .btn-add-incendio { background-color: #b3241e; }
+        .btn-add-busqueda { background-color: #d97e00; }
+
+        .resource-container { background-color: #252525; border: 1px solid #444; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+        .resource-inputs-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .resource-title { font-size: 0.9rem; font-weight: bold; color: #fff; margin-bottom: 6px; display: block;}
+        
+        .input-name-field { flex: 2; }
+        .input-qty-field { flex: 1; }
+        .input-leader-field { flex: 2; }
+
+        .resource-btn { 
+            width: 100%; padding: 10px; font-size: 0.85rem; font-weight: bold; border: none; border-radius: 6px; 
+            cursor: pointer; color: white; text-align: center;
+        }
+        .bg-fix { background-color: #1a5c20; }
+        .resource-btn.disabled { 
+            background-color: #000 !important; border: 1px solid #555 !important; 
+            color: #aaa !important; cursor: not-allowed;
+        }
+
+        .brigada-actions { display: flex; gap: 10px; }
+        .piso-collapse { background-color: #252525; border: 1px solid #444; border-radius: 8px; margin-bottom: 8px; padding: 10px; }
+        .piso-title-bar { font-weight: bold; font-size: 0.95rem; color: var(--accent-orange); border-bottom: 1px dashed #555; padding-bottom: 4px; margin-bottom: 8px; }
+        .piso-title-bar.subsuelo-title { color: #8aafff; }
+        .depto-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .depto-item { background-color: #1e1e1e; border: 1px solid #3a3a3a; padding: 8px; border-radius: 6px; display: flex; flex-direction: column; gap: 4px; }
+        .depto-header-row { display: flex; justify-content: space-between; width: 100%; align-items: center; }
+        .depto-btn { background-color: #444; color: white; border: none; padding: 6px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer; }
+        .depto-btn.checked { background-color: var(--accent-green); color: black; font-weight: bold; }
+        .depto-summary { font-size: 0.75rem; color: #ddd; line-height: 1.2; border-top: 1px solid #333; padding-top: 4px; margin-top: 2px; }
+
+        .btn-pdf {
+            width: 100%; padding: 15px; font-size: 1rem; font-weight: bold; background-color: var(--accent-green);
+            color: black; border: none; border-radius: 12px; cursor: pointer; display: none; text-transform: uppercase;
+            box-shadow: 0 4px 8px rgba(52, 199, 89, 0.3); margin-top: 10px;
+        }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card-bg); border: 1px solid #555; padding: 20px; border-radius: 12px; width: 85%; max-width: 400px; }
+        .modal-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--accent-orange); text-align: center;}
+        .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-modal-save { background-color: var(--accent-green); color: black; border: none; padding: 10px; border-radius: 6px; font-weight: bold; flex: 1; cursor: pointer; }
+        .btn-modal-cancel { background-color: #444; color: white; border: none; padding: 10px; border-radius: 6px; flex: 1; cursor: pointer; }
+
+        @media print {
+            body { background-color: white !important; color: black !important; padding: 0; }
+            .card { background-color: white !important; border: 1px solid #000 !important; box-shadow: none !important; color: black !important; page-break-inside: avoid; }
+            h1 { color: black !important; border-bottom: 2px solid #000 !important; }
+            .card-title { color: black !important; border-left: 4px solid #000 !important; }
+            
+            .counter-btn, .btn-add-generic, .time-btn, .depto-btn, .btn-pdf, .safety-summary-grid { display: none !important; }
+            .print-time-text { display: inline-block !important; font-weight: bold !important; color: black !important; }
+
+            input[type="text"], select, input[type="number"] { background-color: white !important; color: black !important; border: 1px solid #aaa !important; opacity: 1 !important; }
+            .main-timer { color: black !important; border: 1px solid black !important; background-color: #eee !important; }
+            .dir-box { background-color: #eee !important; color: black !important; border-left-color: black !important; }
+            .time-row, .resource-container, .depto-item, .piso-collapse { background-color: white !important; border: 1px solid #ccc !important; color: black !important; }
+            .piso-title-bar { color: black !important; border-bottom: 1px dashed black !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚒 SCI - Bomberos Río Tercero</h1>
+
+    <div class="safety-summary-grid">
+        <div class="live-safety-bar">
+            <span class="live-safety-label">🚨 En el Interior</span>
+            <div class="live-safety-count" id="total-bomberos-interior">0</div>
+        </div>
+        <div class="live-safety-bar total-scene">
+            <span class="live-safety-label">👥 Fuerza Efectiva Total</span>
+            <div class="live-safety-count" id="total-bomberos-escena">0</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title red-title">1. Datos de la Estructura e Hidratación</div>
+        <div class="form-group">
+            <label>Identificación / Dirección del Edificio</label>
+            <input type="text" id="edificio" placeholder="Ej: Torre Centro / Calle Belgrano 450">
+        </div>
+        
+        <div class="directives-grid">
+            <div class="dir-box border-blue">
+                <span class="label">💧 Pto. Descarga (Líneas)</span>
+                <span class="value" id="calc-descarga">Planta Baja</span>
+            </div>
+            <div class="dir-box border-green">
+                <span class="label">🛡️ Pto. Reserva Logística</span>
+                <span class="value" id="calc-reserva">Planta Baja</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Cantidad de Pisos Totales</label>
+            <div class="counter-container">
+                <button type="button" class="counter-btn" data-campo="pisos" data-cambio="-1" aria-label="Disminuir pisos">-</button>
+                <div class="counter-value" id="val-pisos">5</div>
+                <button type="button" class="counter-btn" data-campo="pisos" data-cambio="1" aria-label="Aumentar pisos">+</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Cantidad de Subsuelos</label>
+            <div class="counter-container">
+                <button type="button" class="counter-btn" data-campo="subsuelos" data-cambio="-1" aria-label="Disminuir subsuelos">-</button>
+                <div class="counter-value" id="val-subsuelos">0</div>
+                <button type="button" class="counter-btn" data-campo="subsuelos" data-cambio="1" aria-label="Aumentar subsuelos">+</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Departamentos por Piso</label>
+            <div class="counter-container">
+                <button type="button" class="counter-btn" data-campo="deptos" data-cambio="-1" aria-label="Disminuir departamentos">-</button>
+                <div class="counter-value" id="val-deptos">3</div>
+                <button type="button" class="counter-btn" data-campo="deptos" data-cambio="1" aria-label="Aumentar departamentos">+</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label style="color: var(--accent-red); font-weight: bold;">PISO DEL INCENDIO (FOCO)</label>
+            <div class="counter-container" style="border-color: #621b18;">
+                <button type="button" class="counter-btn btn-foco" data-campo="foco" data-cambio="-1" aria-label="Disminuir piso del incendio">-</button>
+                <div class="counter-value" id="val-foco" style="color: var(--accent-red); font-size: 1.4rem;">1</div>
+                <button type="button" class="counter-btn btn-foco" data-campo="foco" data-cambio="1" aria-label="Aumentar piso del incendio">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title purple-title">2. Personal / Organigrama SCI</div>
+        <div class="form-group"><label>Comandante del Incidente (CI)</label><input type="text" placeholder="Nombre del CI"></div>
+        <div class="form-group"><label>Jefe de Operaciones</label><input type="text" placeholder="Nombre del Jefe de Ops"></div>
+        <div class="form-group"><label>Jefe de Dotación / Ataque</label><input type="text" placeholder="Nombre del Jefe de Dotación"></div>
+        <div class="form-group"><label>Jefe de Abastecimiento</label><input type="text" placeholder="Nombre del Jefe de Abast."></div>
+        <div class="form-group"><label>Jefe de Triage</label><input type="text" placeholder="Nombre del Jefe de Triage"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title orange-title">
+            <span>3. Tiempos Operativos Generales</span>
+            <div class="main-timer" id="cronometro-general">00:00</div>
+        </div>
+        <div class="time-row">
+            <span class="time-label">1. Ingreso General al Edificio</span>
+            <button id="btn-ingreso" class="time-btn" onclick="registrarHito('ingreso')">REGISTRAR</button>
+            <span id="txt-ingreso" class="print-time-text">--:--</span>
+        </div>
+        <div class="time-row">
+            <span class="time-label">2. Llegada al Piso del Incendio</span>
+            <button id="btn-llegada" class="time-btn" onclick="registrarHito('llegada')">REGISTRAR</button>
+            <span id="txt-llegada" class="print-time-text">--:--</span>
+        </div>
+        <div class="time-row">
+            <span class="time-label">3. Inicio de Extinción</span>
+            <button id="btn-extincion" class="time-btn" onclick="registrarHito('extincion')">REGISTRAR</button>
+            <span id="txt-extincion" class="print-time-text">--:--</span>
+        </div>
+        <div class="time-row">
+            <span class="time-label">4. Finalización de la Extinción</span>
+            <button id="btn-fin-extincion" class="time-btn" onclick="registrarHito('fin-extincion')">REGISTRAR</button>
+            <span id="txt-fin-extincion" class="print-time-text">--:--</span>
+        </div>
+        <div class="time-row">
+            <span class="time-label">5. Finalización de la Búsqueda</span>
+            <button id="btn-fin-busqueda" class="time-btn" onclick="registrarHito('fin-busqueda')">REGISTRAR</button>
+            <span id="txt-fin-busqueda" class="print-time-text">--:--</span>
+        </div>
+        <div class="time-row" style="border-color: var(--accent-red);">
+            <span class="time-label" style="color: var(--accent-red); font-weight: bold;">6. Finalización de la Emergencia</span>
+            <button id="btn-fin-emergencia" class="time-btn" style="background-color: var(--accent-red);" onclick="registrarHito('fin-emergencia')">CERRAR SCI</button>
+            <span id="txt-fin-emergencia" class="print-time-text">--:--</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title purple-title">4. Recursos: Móviles Intervinientes</div>
+        <button class="btn-add-generic btn-add-movil" onclick="crearMovil()">➕ Añadir Móvil en Escena</button>
+        <div id="contenedor-moviles"></div>
+        <div class="totals-row">
+            <span class="total-item" id="sum-total-moviles">Móviles totales: 0</span>
+            <span class="total-item" id="sum-total-personal-escena">Personal total en escena: 0</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title red-title">5. Control de Brigadas Activas</div>
+        <button class="btn-add-generic btn-add-incendio" onclick="crearBrigada('incendio')">➕ Añadir Brigada de Incendio</button>
+        <button class="btn-add-generic btn-add-busqueda" onclick="crearBrigada('busqueda')">➕ Añadir Brigada de Búsqueda</button>
+        <div id="contenedor-brigadas"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title orange-title">6. Registro de Búsqueda por Pisos (Todos)</div>
+        <div id="registro-busqueda-completo"></div>
+    </div>
+
+    <button id="btn-descargar-pdf" class="btn-pdf" onclick="descargarReportePDF()">📥 Descargar Reporte PDF</button>
+</div>
+
+<div id="modalDepto" class="modal">
+    <div class="modal-content">
+        <div class="modal-title" id="modal-depto-titulo">Reporte de Departamento</div>
+        <div class="form-group">
+            <label>Grupo que realizó la búsqueda</label>
+            <select id="modal-grupo"></select>
+        </div>
+        <div class="form-group">
+            <label>¿Se retiraron víctimas?</label>
+            <select id="modal-victimas-sn" onchange="toggleCantVictimas()">
+                <option value="NO">NO</option>
+                <option value="SI">SÍ</option>
+            </select>
+        </div>
+        <div class="form-group" id="grupo-cant-victimas" style="display: none;">
+            <label>Cantidad de víctimas</label>
+            <input type="number" id="modal-cant" value="0" min="0">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" onclick="cerrarModal()">CANCELAR</button>
+            <button class="btn-modal-save" onclick="guardarReporteDepto()">GUARDAR REGISTRO</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let datos = { pisos: 5, subsuelos: 0, deptos: 3, foco: 1 };
+    let horaInicio = null;
+    let intervaloCronometro = null;
+    let deptoSeleccionadoId = null;
+    
+    let conteoMoviles = 0;
+    let conteoBrigadas = { incendio: 0, busqueda: 0 };
+    let listaNombresBrigadas = [];
+    
+    let registroPersonalMoviles = {};
+    let brigadasEnInterior = {};
+
+    const letrasAbecedario = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
+
+    function cambiarValor(campo, cambio) {
+        if (campo === 'pisos') {
+            datos.pisos = Math.max(1, datos.pisos + cambio);
+            if (datos.foco > datos.pisos) datos.foco = datos.pisos;
+        } else if (campo === 'subsuelos') {
+            datos.subsuelos = Math.max(0, datos.subsuelos + cambio);
+        } else if (campo === 'deptos') {
+            datos.deptos = Math.max(1, Math.min(12, datos.deptos + cambio));
+        } else if (campo === 'foco') {
+            datos.foco = Math.max(1, Math.min(datos.pisos, datos.foco + cambio));
+        }
+        actualizarUI();
+    }
+
+    function actualizarUI() {
+        document.getElementById('val-pisos').textContent = datos.pisos;
+        document.getElementById('val-subsuelos').textContent = datos.subsuelos;
+        document.getElementById('val-deptos').textContent = datos.deptos;
+        document.getElementById('val-foco').textContent = datos.foco;
+
+        let pDescarga = datos.foco - 1;
+        document.getElementById('calc-descarga').innerText = pDescarga <= 0 ? "Planta Baja" : "Piso " + pDescarga;
+
+        let pReserva = datos.foco - 2;
+        document.getElementById('calc-reserva').innerText = pReserva <= 0 ? "Planta Baja" : "Piso " + pReserva;
+
+        generarTodoElMapaBusqueda();
+    }
+
+    function crearMovil() {
+        conteoMoviles++;
+        let idUnico = 'movil-' + conteoMoviles;
+        registroPersonalMoviles[idUnico] = 0;
+
+        let contenedor = document.getElementById('contenedor-moviles');
+        let div = document.createElement('div');
+        div.className = "resource-container";
+        div.id = "card-" + idUnico;
+        div.innerHTML = `
+            <span class="resource-title">🚒 Unidad Interviniente N° ${conteoMoviles}</span>
+            <div class="resource-inputs-row">
+                <input type="text" id="tipo-${idUnico}" class="input-name-field" placeholder="Vehículo (Ej: B-14)">
+                <input type="number" id="cant-${idUnico}" class="input-qty-field" placeholder="Personal" min="1" value="4">
+            </div>
+            <div class="resource-inputs-row">
+                <input type="text" id="cargo-${idUnico}" class="input-leader-field" placeholder="A cargo de...">
+                <button id="btn-${idUnico}-fix" class="resource-btn bg-fix" style="flex:1;" onclick="fijarMovil('${idUnico}')">FIJAR MÓVIL</button>
+            </div>
+            <span id="txt-${idUnico}-fix" class="print-time-text"></span>
+        `;
+        contenedor.appendChild(div);
+        recalcularTotalesEscena();
+    }
+
+    function fijarMovil(idUnico) {
+        let qty = parseInt(document.getElementById(`cant-${idUnico}`).value) || 0;
+        let tipo = document.getElementById(`tipo-${idUnico}`).value || 'Móvil';
+        let cargo = document.getElementById(`cargo-${idUnico}`).value || 'Sin Nombre';
+
+        document.getElementById(`tipo-${idUnico}`).disabled = true;
+        document.getElementById(`cant-${idUnico}`).disabled = true;
+        document.getElementById(`cargo-${idUnico}`).disabled = true;
+        
+        let btn = document.getElementById(`btn-${idUnico}-fix`);
+        btn.innerText = "REGISTRADO ✓";
+        btn.classList.add('disabled');
+        btn.disabled = true;
+
+        document.getElementById(`txt-${idUnico}-fix`).innerText = `✓ Registrado - Personal: ${qty} - Lidera: ${cargo}`;
+
+        registroPersonalMoviles[idUnico] = qty;
+        recalcularTotalesEscena();
+    }
+
+    function recalcularTotalesEscena() {
+        let totalMovilesFijados = 0;
+        let totalPersonalSuma = 0;
+        for (let id in registroPersonalMoviles) {
+            if (document.getElementById(`btn-${id}-fix`).disabled) {
+                totalMovilesFijados++; totalPersonalSuma += registroPersonalMoviles[id];
+            }
+        }
+        document.getElementById('sum-total-moviles').innerText = `Móviles totales: ${totalMovilesFijados}`;
+        document.getElementById('sum-total-personal-escena').innerText = `Personal total en escena: ${totalPersonalSuma}`;
+        document.getElementById('total-bomberos-escena').innerText = totalPersonalSuma;
+    }
+
+    function crearBrigada(tipo) {
+        conteoBrigadas[tipo]++;
+        let num = conteoBrigadas[tipo];
+        let prefijo = tipo === 'incendio' ? 'BI' : 'BB';
+        let nombreLegible = (tipo === 'incendio' ? 'Brigada Incendio ' : 'Brigada Búsqueda ') + num;
+        let idUnico = prefijo + num;
+
+        listaNombresBrigadas.push(nombreLegible);
+        brigadasEnInterior[idUnico] = 0;
+
+        let contenedor = document.getElementById('contenedor-brigadas');
+        let div = document.createElement('div');
+        div.className = "resource-container";
+        div.id = "card-" + idUnico;
+        div.innerHTML = `
+            <span class="resource-title">${tipo === 'incendio' ? '🔥' : '🔍'} ${nombreLegible}</span>
+            <div class="resource-inputs-row">
+                <input type="text" id="cargo-${idUnico}" class="brigada-input-name" placeholder="A cargo de...">
+                <input type="number" id="cant-${idUnico}" class="brigada-input-qty" placeholder="Cant." min="1" value="2">
+            </div>
+            <div class="brigada-actions">
+                <button id="btn-${idUnico}-in" class="resource-btn bg-in" onclick="registrarBrigada('${idUnico}', 'in')">INGRESO</button>
+                <button id="btn-${idUnico}-out" class="resource-btn bg-out" style="background-color:#7a1a1a;" onclick="registrarBrigada('${idUnico}', 'out')">SALIDA</button>
+            </div>
+            <div class="brigada-actions" style="margin-top:5px;">
+                <span id="txt-${idUnico}-in" class="print-time-text"></span>
+                <span id="txt-${idUnico}-out" class="print-time-text" style="margin-left:15px;"></span>
+            </div>
+        `;
+        contenedor.appendChild(div);
+    }
+
+    function registrarBrigada(idUnico, accion) {
+        let ahora = new Date();
+        let hora = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        let btn = document.getElementById(`btn-${idUnico}-${accion}`);
+        let cantidadEfectivos = parseInt(document.getElementById(`cant-${idUnico}`).value) || 0;
+        
+        if(accion === 'in') {
+            document.getElementById(`cargo-${idUnico}`).disabled = true;
+            document.getElementById(`cant-${idUnico}`).disabled = true;
+            brigadasEnInterior[idUnico] = cantidadEfectivos;
+            document.getElementById(`txt-${idUnico}-in`).innerText = `ENTRÓ: ${hora}`;
+        } else if(accion === 'out') {
+            brigadasEnInterior[idUnico] = 0;
+            document.getElementById(`txt-${idUnico}-out`).innerText = `SALIÓ: ${hora}`;
+        }
+        
+        btn.innerText = (accion === 'in' ? 'IN: ' : 'OUT: ') + hora;
+        btn.classList.add('disabled'); btn.disabled = true;
+        recalcularPersonalInterior();
+    }
+
+    function recalcularPersonalInterior() {
+        let total = 0;
+        for (let id in brigadasEnInterior) { total += brigadasEnInterior[id]; }
+        document.getElementById('total-bomberos-interior').innerText = total;
+    }
+
+    function generarTodoElMapaBusqueda() {
+        let contenedor = document.getElementById('registro-busqueda-completo');
+        contenedor.innerHTML = ""; 
+        for (let p = datos.pisos; p >= 1; p--) { crearBloquePiso(p, false, contenedor); }
+        for (let s = 1; s <= datos.subsuelos; s++) { crearBloquePiso(s, true, contenedor); }
+    }
+
+    function crearBloquePiso(numPiso, esSubsuelo, contenedor) {
+        let esFoco = (!esSubsuelo && numPiso === datos.foco);
+        let pisoBox = document.createElement('div');
+        pisoBox.className = "piso-collapse";
+        let labelPiso = esSubsuelo ? "Subsuelo -" + numPiso : "Piso " + numPiso;
+        if (esFoco) labelPiso += " 🔥 [FOCO]";
+        
+        let claseHeader = esSubsuelo ? "piso-title-bar subsuelo-title" : "piso-title-bar";
+        pisoBox.innerHTML = `<div class="${claseHeader}">${labelPiso}</div>`;
+
+        let grid = document.createElement('div');
+        grid.className = "depto-grid";
+
+        for (let d = 0; d < datos.deptos; d++) {
+            let letra = letrasAbecedario[d] || (d + 1);
+            let tagPiso = esSubsuelo ? "ss" + numPiso : "p" + numPiso;
+            let idDepto = `${tagPiso}-depto${letra}`;
+
+            let deptoBox = document.createElement('div');
+            deptoBox.className = "depto-item";
+            deptoBox.id = `box-${idDepto}`;
+            deptoBox.innerHTML = `
+                <div class="depto-header-row">
+                    <span style="font-weight:bold; font-size:0.85rem;">Depto ${letra}</span>
+                    <button id="btn-${idDepto}" class="depto-btn" onclick="abrirReporteDepto('${idDepto}', '${labelPiso}', '${letra}')">OK</button>
+                </div>
+                <div id="sum-${idDepto}" class="depto-summary" style="display:none;"></div>
+            `;
+            grid.appendChild(deptoBox);
+        }
+        pisoBox.appendChild(grid);
+        contenedor.appendChild(pisoBox);
+    }
+
+    function abrirReporteDepto(id, labelPiso, letra) {
+        deptoSeleccionadoId = id;
+        document.getElementById('modal-depto-titulo').innerText = `Reporte: ${labelPiso} - Depto ${letra}`;
+        let selectGrupo = document.getElementById('modal-grupo');
+        selectGrupo.innerHTML = "";
+        
+        if(listaNombresBrigadas.length === 0) {
+            let opt = document.createElement('option'); opt.value = "Dotación Inicial"; opt.innerText = "Dotación Inicial"; selectGrupo.appendChild(opt);
+        } else {
+            listaNombresBrigadas.forEach(bg => {
+                let opt = document.createElement('option'); opt.value = bg; opt.innerText = bg; selectGrupo.appendChild(opt);
+            });
+        }
+        document.getElementById('modal-victimas-sn').selectedIndex = 0;
+        document.getElementById('modal-cant').value = 0;
+        document.getElementById('grupo-cant-victimas').style.display = "none";
+        document.getElementById('modalDepto').style.display = "flex";
+    }
+
+    function toggleCantVictimas() {
+        let sn = document.getElementById('modal-victimas-sn').value;
+        document.getElementById('grupo-cant-victimas').style.display = (sn === "SI") ? "block" : "none";
+    }
+
+    function cerrarModal() { document.getElementById('modalDepto').style.display = "none"; }
+
+    function guardarReporteDepto() {
+        let ahora = new Date();
+        let hora = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        let grupo = document.getElementById('modal-grupo').value;
+        let tieneVictimas = document.getElementById('modal-victimas-sn').value;
+        let cantVictimas = tieneVictimas === "SI" ? document.getElementById('modal-cant').value : 0;
+
+        let btn = document.getElementById('btn-' + deptoSeleccionadoId);
+        btn.innerText = "✓ " + hora; btn.className = "depto-btn checked";
+
+        let sumario = document.getElementById('sum-' + deptoSeleccionadoId);
+        sumario.style.display = "block";
+        sumario.innerHTML = `🛠️ ${grupo}<br>👤 Víctimas: ${cantVictimas > 0 ? '<b>'+cantVictimas+'</b>' : 'Ninguna'}`;
+        cerrarModal();
+    }
+
+    function registrarHito(tipo) {
+        let ahora = new Date();
+        let hora = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+        let btn = document.getElementById('btn-' + tipo);
+        btn.innerText = hora; btn.classList.add('active'); btn.disabled = true;
+
+        document.getElementById('txt-' + tipo).innerText = hora;
+
+        if (tipo === 'ingreso' && !horaInicio) {
+            horaInicio = ahora; intervaloCronometro = setInterval(actualizarCronometro, 1000);
+        }
+        if (tipo === 'fin-emergencia') {
+            clearInterval(intervaloCronometro); document.getElementById('btn-descargar-pdf').style.display = 'block';
+        }
+    }
+
+    function actualizarCronometro() {
+        let ahora = new Date();
+        let dif = Math.floor((ahora - horaInicio) / 1000);
+        let min = Math.floor(dif / 60); let seg = dif % 60;
+        document.getElementById('cronometro-general').innerText = (min < 10 ? '0' + min : min) + ':' + (seg < 10 ? '0' + seg : seg);
+    }
+
+    function descargarReportePDF() { window.print(); }
+
+    // Eventos de los contadores: más confiables en Safari/iOS que los onclick embebidos.
+    document.querySelectorAll('.counter-btn[data-campo]').forEach(function (boton) {
+        boton.addEventListener('click', function (evento) {
+            evento.preventDefault();
+            cambiarValor(boton.dataset.campo, Number(boton.dataset.cambio));
+        });
+    });
+
+    actualizarUI();
+</script>
+
+
+<script>
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function (error) {
+      console.error('No se pudo registrar el service worker:', error);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
