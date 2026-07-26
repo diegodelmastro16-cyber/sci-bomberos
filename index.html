@@ -196,7 +196,18 @@
             .counter-btn, .btn-add-generic, .time-btn, .depto-btn, .btn-pdf, .safety-summary-grid { display: none !important; }
             .print-time-text { display: inline-block !important; font-weight: bold !important; color: black !important; }
 
-            input[type="text"], select, input[type="number"] { background-color: white !important; color: black !important; border: 1px solid #aaa !important; opacity: 1 !important; }
+            input[type="text"], input[type="number"], select, textarea, .counter-value {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                -webkit-text-fill-color: #000000 !important;
+                border: 1px solid #aaaaaa !important;
+                opacity: 1 !important;
+            }
+            .print-field-value,
+            .print-field-value * {
+                color: #000000 !important;
+                -webkit-text-fill-color: #000000 !important;
+            }
             .main-timer { color: black !important; border: 1px solid black !important; background-color: #eee !important; }
             .dir-box { background-color: #eee !important; color: black !important; border-left-color: black !important; }
             .time-row, .resource-container, .depto-item, .piso-collapse { background-color: white !important; border: 1px solid #ccc !important; color: black !important; }
