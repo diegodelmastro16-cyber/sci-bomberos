@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SCI - Rescate Vehicular V1.1</title>
+  <meta name="theme-color" content="#111111">
+  <style>
+    :root{
+      --bg:#111;
+      --card:#1d1d1d;
+      --field:#2a2a2a;
+      --text:#fff;
+      --muted:#ccc;
+      --line:#484848;
+      --red:#ff3b30;
+      --orange:#ff9500;
+      --green:#34c759;
+      --blue:#0a84ff;
+      --yellow:#ffd60a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      padding:14px;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+    .container{max-width:760px;margin:0 auto}
+    h1{
+      font-size:1.35rem;
+      text-align:center;
+      color:var(--orange);
+      border-bottom:2px solid var(--line);
+      padding-bottom:10px;
+      margin:4px 0 14px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:14px;
+      margin-bottom:14px;
+      box-shadow:0 4px 12px rgba(0,0,0,.25);
+    }
+    .card-title{
+      font-size:1.05rem;
+      font-weight:800;
+      margin-bottom:12px;
+      border-left:5px solid var(--blue);
+      padding-left:8px;
+    }
+    .card-title.red{border-left-color:var(--red)}
+    .card-title.orange{border-left-color:var(--orange)}
+    .card-title.green{border-left-color:var(--green)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .form-group{margin-bottom:11px}
+    label{
+      display:block;
+      font-size:.84rem;
+      font-weight:700;
+      color:#ddd;
+      margin-bottom:4px;
+    }
+    input, select, textarea{
+      width:100%;
+      background:var(--field);
+      color:#fff;
+      -webkit-text-fill-color:#fff;
+      border:1px solid #555;
+      border-radius:7px;
+      padding:11px;
+      font-size:1rem;
+      opacity:1;
+    }
+    textarea{min-height:80px;resize:vertical}
+    button{
+      -webkit-appearance:none;
+      appearance:none;
+      touch-action:manipulation;
+      cursor:pointer;
+      border:0;
+      border-radius:8px;
+      padding:11px 13px;
+      font-weight:800;
+      font-size:.92rem;
+    }
+    .btn-blue{background:var(--blue);color:#fff}
+    .btn-green{background:var(--green);color:#000}
+    .btn-red{background:var(--red);color:#fff}
+    .btn-orange{background:var(--orange);color:#000}
+    .btn-dark{background:#444;color:#fff}
+    .btn-full{width:100%}
+    .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn-row button{flex:1;min-width:140px}
+    .counter{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:var(--field);
+      padding:5px;
+      border:1px solid #555;
+      border-radius:8px;
+    }
+    .counter button{width:48px;height:46px;font-size:1.4rem;background:#444;color:#fff}
+    .counter-value{font-size:1.35rem;font-weight:900;min-width:60px;text-align:center}
+    .status{
+      background:#121212;
+      border:1px dashed #555;
+      border-radius:8px;
+      padding:9px;
+      margin-top:8px;
+      color:var(--green);
+      font-weight:700;
+      font-size:.88rem;
+      word-break:break-word;
+    }
+    .resource,.vehicle,.victim{
+      background:#262626;
+      border:1px solid #4b4b4b;
+      border-radius:10px;
+      padding:11px;
+      margin-bottom:10px;
+    }
+    .resource-title,.vehicle-title,.victim-title{
+      font-weight:900;
+      margin-bottom:9px;
+      color:#fff;
+    }
+    .victim{background:#202020}
+    .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .check-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:#252525;
+      border:1px solid #444;
+      border-radius:7px;
+      padding:9px;
+      font-size:.86rem;
+    }
+    .check-item input{width:22px;height:22px;margin:0;accent-color:var(--green)}
+    .time-display{
+      margin-top:7px;
+      padding:8px;
+      border-radius:7px;
+      background:#101010;
+      color:var(--green);
+      border:1px solid #3f3f3f;
+      font-family:monospace;
+      font-weight:700;
+    }
+    .hidden{display:none!important}
+    .top-actions{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:rgba(17,17,17,.96);
+      padding:8px 0;
+      margin-bottom:8px;
+    }
+    .small{font-size:.77rem;color:#bbb}
+    .print-only{display:none}
+    @media(max-width:620px){
+      .grid-2,.grid-3,.check-grid{grid-template-columns:1fr}
+    }
+    @media print{
+      body{background:#fff!important;color:#000!important;padding:0}
+      .container{max-width:none}
+      .top-actions,.no-print,button{display:none!important}
+      .card,.resource,.vehicle,.victim{
+        background:#fff!important;
+        color:#000!important;
+        border:1px solid #777!important;
+        box-shadow:none!important;
+        page-break-inside:avoid;
+      }
+      h1,.card-title,.resource-title,.vehicle-title,.victim-title,label,
+      .status,.time-display,.small,span,div,p{
+        color:#000!important;
+        -webkit-text-fill-color:#000!important;
+      }
+      input,select,textarea{
+        background:#fff!important;
+        color:#000!important;
+        -webkit-text-fill-color:#000!important;
+        border:1px solid #aaa!important;
+        opacity:1!important;
+      }
+      .check-item{background:#fff!important;color:#000!important;border:1px solid #aaa!important}
+      .print-only{display:block!important}
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="top-actions no-print">
+    <div class="btn-row">
+      <button class="btn-red" id="btnNueva">NUEVA INTERVENCIÓN</button>
+      <button class="btn-green" id="btnImprimir">GENERAR PDF / IMPRIMIR</button>
+    </div>
+  </div>
+
+  <h1>🚗 SCI – MÓDULO DE RESCATE VEHICULAR</h1>
+
+  <section class="card">
+    <div class="card-title orange">1. Datos del incidente</div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Dirección / referencia</label>
+        <input type="text" id="direccion" placeholder="Ej.: Ruta 6 km 12 / intersección / referencia">
+      </div>
+      <div class="form-group">
+        <label>Fecha y hora del incidente</label>
+        <button class="btn-blue btn-full no-print" id="btnFechaHora">REGISTRAR FECHA Y HORA</button>
+        <div class="time-display" id="fechaHoraTxt">Sin registrar</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Ubicación GPS</label>
+      <button class="btn-blue btn-full no-print" id="btnUbicacion">REGISTRAR UBICACIÓN ACTUAL</button>
+      <div class="status" id="ubicacionTxt">Sin registrar</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Tipo de siniestro</label>
+        <select id="tipoSiniestro">
+          <option value="">Seleccionar</option>
+          <option>Choque frontal</option>
+          <option>Choque por alcance</option>
+          <option>Choque lateral</option>
+          <option>Vuelco</option>
+          <option>Múltiples vehículos</option>
+          <option>Atropellamiento</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Otro tipo de siniestro</label>
+        <input type="text" id="otroSiniestro" placeholder="Completar si corresponde">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Cantidad de vehículos involucrados</label>
+      <div class="counter">
+        <button type="button" id="vehMenos">−</button>
+        <div class="counter-value" id="vehCantidad">1</div>
+        <button type="button" id="vehMas">+</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Llegada al lugar</label>
+      <button class="btn-blue btn-full no-print" id="btnLlegadaLugar">REGISTRAR LLEGADA AL LUGAR</button>
+      <div class="time-display" id="tiempo-llegada">Sin registrar</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-title green">2. Fuerzas presentes</div>
+
+    <div class="resource">
+      <div class="resource-title">Seguridad Ciudadana</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Móvil</label><input type="text" id="fuerza-sc-movil" placeholder="Identificación del móvil"></div>
+        <div class="form-group"><label>A cargo</label><input type="text" id="fuerza-sc-cargo" placeholder="Nombre del responsable"></div>
+      </div>
+    </div>
+
+    <div class="resource">
+      <div class="resource-title">Policía</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Móvil</label><input type="text" id="fuerza-policia-movil" placeholder="Identificación del móvil"></div>
+        <div class="form-group"><label>A cargo</label><input type="text" id="fuerza-policia-cargo" placeholder="Nombre del responsable"></div>
+      </div>
+    </div>
+
+    <div class="resource">
+      <div class="resource-title">Policía Local</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Móvil</label><input type="text" id="fuerza-local-movil" placeholder="Identificación del móvil"></div>
+        <div class="form-group"><label>A cargo</label><input type="text" id="fuerza-local-cargo" placeholder="Nombre del responsable"></div>
+      </div>
+    </div>
+
+    <div class="resource">
+      <div class="resource-title">Tránsito</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Móvil</label><input type="text" id="fuerza-transito-movil" placeholder="Identificación del móvil"></div>
+        <div class="form-group"><label>A cargo</label><input type="text" id="fuerza-transito-cargo" placeholder="Nombre del responsable"></div>
+      </div>
+    </div>
+
+    <button class="btn-blue btn-full no-print" id="btnAgregarFuerza">➕ AGREGAR OTRA FUERZA</button>
+    <div id="otrasFuerzas"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-title">3. Organización del incidente</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Oficial a cargo</label>
+        <input type="text" id="oficialCargo" placeholder="Nombre y jerarquía">
+      </div>
+      <div class="form-group">
+        <label>Jefe de Rescate</label>
+        <input type="text" id="jefeRescate" placeholder="Nombre y jerarquía">
+      </div>
+      <div class="form-group">
+        <label>Encargado de TRIAGE</label>
+        <input type="text" id="encargadoTriage" placeholder="Nombre y jerarquía">
+      </div>
+      <div class="form-group">
+        <label>Encargado de Seguridad</label>
+        <input type="text" id="encargadoSeguridad" placeholder="Nombre y jerarquía">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-title green">4. Seguridad de la escena</div>
+    <div class="check-grid" id="seguridadGrid"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-title">5. Recursos / Dotaciones</div>
+    <button class="btn-blue btn-full no-print" id="btnAgregarDotacion">➕ AGREGAR DOTACIÓN</button>
+    <div id="dotaciones"></div>
+    <div class="status" id="totalDotaciones">Dotaciones: 0 · Personal total: 0</div>
+  </section>
+
+  <section class="card">
+    <div class="card-title red">6. Vehículos, víctimas y tiempos</div>
+    <div id="vehiculos"></div>
+  </section>
+
+
+  <section class="card">
+    <div class="card-title">7. Observaciones finales</div>
+    <textarea id="observaciones" placeholder="Resumen de las maniobras, novedades, riesgos, derivaciones, observaciones..."></textarea>
+  </section>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = "sci_rescate_vehicular_prueba_v1";
+
+  const seguridadItems = [
+    "Tránsito controlado",
+    "Zona de trabajo delimitada",
+    "Vehículo/s estabilizado/s",
+    "Riesgo de incendio controlado",
+    "Batería desconectada",
+    "Airbags identificados",
+    "Energía alternativa identificada",
+    "EPP completo",
+    "Protección de víctimas instalada",
+    "Servicio sanitario presente"
+  ];
+
+  const maniobrasItems = [
+    "Estabilización",
+    "Corte de batería",
+    "Protección de airbags",
+    "Retiro de cristales",
+    "Retiro de puerta",
+    "Corte de parante A",
+    "Corte de parante B",
+    "Corte de parante C",
+    "Remoción de techo",
+    "Desplazamiento de tablero",
+    "Extracción rápida",
+    "Extracción controlada",
+    "Uso de tabla espinal",
+    "Collar cervical",
+    "KED"
+  ];
+
+  let state = {
+    fechaHora:"",
+    ubicacion:null,
+    cantidadVehiculos:1,
+    dotaciones:[],
+    otrasFuerzas:[],
+    vehiculos:[],
+    tiemposGenerales:{},
+    seguridad:{}
+  };
+
+  const $ = id => document.getElementById(id);
+  const horaAhora = () => new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const fechaHoraAhora = () => new Date().toLocaleString("es-AR");
+
+  function asegurarVehiculos(){
+    while(state.vehiculos.length < state.cantidadVehiculos){
+      state.vehiculos.push({
+        dominio:"",
+        tipo:"",
+        posicion:"",
+        energia:"",
+        estabilizacion:"",
+        primerAcceso:"",
+        cantidadVictimas:1,
+        victimas:[crearVictima()],
+        maniobras:{},
+        otrasManiobras:""
+      });
+    }
+    state.vehiculos = state.vehiculos.slice(0,state.cantidadVehiculos);
+    state.vehiculos.forEach(v=>{
+      v.cantidadVictimas = Math.max(0, Number(v.cantidadVictimas || 0));
+      v.victimas = Array.isArray(v.victimas) ? v.victimas : [];
+      while(v.victimas.length < v.cantidadVictimas) v.victimas.push(crearVictima());
+      v.victimas = v.victimas.slice(0,v.cantidadVictimas);
+    });
+  }
+
+  function crearVictima(){
+    return {
+      identificacion:"",
+      ubicacion:"",
+      estado:"",
+      atrapamiento:"",
+      prioridad:"",
+      liberacion:"",
+      extraccion:""
+    };
+  }
+
+  function renderSeguridad(){
+    $("seguridadGrid").innerHTML = seguridadItems.map((item,i)=>`
+      <label class="check-item">
+        <input type="checkbox" data-seg="${i}" ${state.seguridad[i] ? "checked" : ""}>
+        <span>${item}</span>
+      </label>
+    `).join("");
+  }
+
+  function renderDotaciones(){
+    $("dotaciones").innerHTML = state.dotaciones.map((d,i)=>`
+      <div class="resource">
+        <div class="resource-title">🚒 Dotación ${i+1}</div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Móvil / identificación</label>
+            <input type="text" data-dot="${i}" data-field="movil" value="${esc(d.movil)}" placeholder="Ej.: Móvil 9">
+          </div>
+          <div class="form-group">
+            <label>A cargo de</label>
+            <input type="text" data-dot="${i}" data-field="cargo" value="${esc(d.cargo)}" placeholder="Nombre">
+          </div>
+          <div class="form-group">
+            <label>Cantidad de personas</label>
+            <input type="number" min="0" data-dot="${i}" data-field="cantidad" value="${Number(d.cantidad||0)}">
+          </div>
+        </div>
+        <button class="btn-dark btn-full no-print" data-eliminar-dot="${i}">ELIMINAR DOTACIÓN</button>
+      </div>
+    `).join("");
+    calcularTotales();
+  }
+
+  function renderOtrasFuerzas(){
+    $("otrasFuerzas").innerHTML = state.otrasFuerzas.map((f,i)=>`
+      <div class="resource">
+        <div class="resource-title">Fuerza adicional ${i+1}</div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Institución / fuerza</label>
+            <input type="text" data-fuerza="${i}" data-ffield="nombre" value="${esc(f.nombre)}" placeholder="Ej.: Defensa Civil">
+          </div>
+          <div class="form-group">
+            <label>Móvil</label>
+            <input type="text" data-fuerza="${i}" data-ffield="movil" value="${esc(f.movil)}">
+          </div>
+          <div class="form-group">
+            <label>A cargo</label>
+            <input type="text" data-fuerza="${i}" data-ffield="cargo" value="${esc(f.cargo)}">
+          </div>
+        </div>
+        <button class="btn-dark btn-full no-print" data-eliminar-fuerza="${i}">ELIMINAR FUERZA</button>
+      </div>
+    `).join("");
+  }
+
+  function renderVehiculos(){
+    asegurarVehiculos();
+    $("vehCantidad").textContent = state.cantidadVehiculos;
+
+    $("vehiculos").innerHTML = state.vehiculos.map((v,vi)=>`
+      <div class="vehicle">
+        <div class="vehicle-title">🚘 Vehículo ${vi+1}</div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Dominio / identificación</label>
+            <input type="text" data-veh="${vi}" data-vfield="dominio" value="${esc(v.dominio)}" placeholder="Dominio o referencia">
+          </div>
+          <div class="form-group">
+            <label>Tipo de vehículo</label>
+            <select data-veh="${vi}" data-vfield="tipo">
+              ${options(["","Automóvil","Camioneta","Camión","Colectivo","Motocicleta","Maquinaria","Otro"],v.tipo)}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Posición</label>
+            <select data-veh="${vi}" data-vfield="posicion">
+              ${options(["","Sobre ruedas","Lateral derecho","Lateral izquierdo","Sobre el techo","En desnivel","Otro"],v.posicion)}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Energía / combustible</label>
+            <select data-veh="${vi}" data-vfield="energia">
+              ${options(["","Nafta","Diésel","GNC","Eléctrico","Híbrido","GLP","Desconocido"],v.energia)}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Estabilización realizada</label>
+          <input type="text" data-veh="${vi}" data-vfield="estabilizacion" value="${esc(v.estabilizacion)}" placeholder="Ej.: cuñas, puntales, tensores...">
+        </div>
+
+        <button class="btn-blue btn-full no-print" data-primer-acceso="${vi}">REGISTRAR PRIMER ACCESO</button>
+        <div class="time-display">Primer acceso: ${v.primerAcceso || "Sin registrar"}</div>
+
+        <div class="form-group" style="margin-top:10px">
+          <label>Cantidad de víctimas en este vehículo</label>
+          <div class="counter">
+            <button type="button" data-vic-menos="${vi}">−</button>
+            <div class="counter-value">${v.cantidadVictimas}</div>
+            <button type="button" data-vic-mas="${vi}">+</button>
+          </div>
+        </div>
+
+        <div>
+          ${v.victimas.map((vict,vci)=>victimaHTML(vict,vi,vci)).join("")}
+        </div>
+
+        <div class="form-group">
+          <label>Maniobras realizadas</label>
+          <div class="check-grid">
+            ${maniobrasItems.map((m,mi)=>`
+              <label class="check-item">
+                <input type="checkbox" data-man="${vi}" data-man-index="${mi}" ${v.maniobras && v.maniobras[mi] ? "checked" : ""}>
+                <span>${m}</span>
+              </label>
+            `).join("")}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Otras maniobras / observaciones del vehículo</label>
+          <textarea data-veh="${vi}" data-vfield="otrasManiobras">${esc(v.otrasManiobras)}</textarea>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function victimaHTML(v,vi,vci){
+    return `
+      <div class="victim">
+        <div class="victim-title">👤 Vehículo ${vi+1} – Víctima ${vci+1}</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Identificación / referencia</label>
+            <input type="text" data-victim="${vi}" data-victim-index="${vci}" data-victim-field="identificacion" value="${esc(v.identificacion)}">
+          </div>
+          <div class="form-group">
+            <label>Ubicación dentro del vehículo</label>
+            <input type="text" data-victim="${vi}" data-victim-index="${vci}" data-victim-field="ubicacion" value="${esc(v.ubicacion)}" placeholder="Conductor, acompañante, asiento trasero...">
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select data-victim="${vi}" data-victim-index="${vci}" data-victim-field="estado">
+              ${options(["","Consciente","Inconsciente","Crítica","Fallecida","Sin determinar"],v.estado)}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Atrapamiento</label>
+            <select data-victim="${vi}" data-victim-index="${vci}" data-victim-field="atrapamiento">
+              ${options(["","Sin atrapamiento","Atrapamiento físico","Atrapamiento mecánico","Atrapamiento mixto"],v.atrapamiento)}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Prioridad de extracción</label>
+            <select data-victim="${vi}" data-victim-index="${vci}" data-victim-field="prioridad">
+              ${options(["","Roja / inmediata","Amarilla / demorada","Verde / menor","Negra"],v.prioridad)}
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-orange no-print" data-liberacion="${vi}-${vci}">REGISTRAR LIBERACIÓN</button>
+          <button class="btn-green no-print" data-extraccion="${vi}-${vci}">REGISTRAR EXTRACCIÓN</button>
+        </div>
+        <div class="time-display">Liberación: ${v.liberacion || "Sin registrar"}</div>
+        <div class="time-display">Extracción: ${v.extraccion || "Sin registrar"}</div>
+      </div>
+    `;
+  }
+
+  function options(arr,selected){
+    return arr.map(x=>`<option ${x===selected?"selected":""}>${x}</option>`).join("");
+  }
+
+  function esc(v){
+    return String(v ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+  }
+
+  function storageLeer(clave){
+    try {
+      return window.localStorage ? localStorage.getItem(clave) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function storageGuardar(clave, valor){
+    try {
+      if(window.localStorage) localStorage.setItem(clave, valor);
+    } catch (e) {
+      // Textastic puede ejecutar la vista previa como about:blank y bloquear localStorage.
+      // La app continúa funcionando durante la sesión.
+    }
+  }
+
+  function storageBorrar(clave){
+    try {
+      if(window.localStorage) localStorage.removeItem(clave);
+    } catch (e) {}
+  }
+
+  function guardar(){
+    const topFields = ["direccion","tipoSiniestro","otroSiniestro","oficialCargo","jefeRescate","encargadoTriage","encargadoSeguridad","observaciones","fuerza-sc-movil","fuerza-sc-cargo","fuerza-policia-movil","fuerza-policia-cargo","fuerza-local-movil","fuerza-local-cargo","fuerza-transito-movil","fuerza-transito-cargo"];
+    state.campos = state.campos || {};
+    topFields.forEach(id=> state.campos[id] = $(id).value);
+    storageGuardar(STORAGE_KEY,JSON.stringify(state));
+  }
+
+  function cargar(){
+    try{
+      const raw = storageLeer(STORAGE_KEY);
+      if(raw) state = Object.assign(state,JSON.parse(raw));
+    }catch(e){ console.warn(e); }
+    state.dotaciones = Array.isArray(state.dotaciones) ? state.dotaciones : [];
+    state.otrasFuerzas = Array.isArray(state.otrasFuerzas) ? state.otrasFuerzas : [];
+    state.vehiculos = Array.isArray(state.vehiculos) ? state.vehiculos : [];
+    state.seguridad = state.seguridad || {};
+    state.tiemposGenerales = state.tiemposGenerales || {};
+    state.campos = state.campos || {};
+    Object.entries(state.campos).forEach(([id,val])=>{ if($(id)) $(id).value = val || ""; });
+    $("fechaHoraTxt").textContent = state.fechaHora || "Sin registrar";
+    if(state.ubicacion){
+      $("ubicacionTxt").innerHTML = `Lat: ${state.ubicacion.lat}<br>Long: ${state.ubicacion.lng}<br>Precisión: ±${state.ubicacion.acc} m`;
+    }
+    Object.entries(state.tiemposGenerales).forEach(([k,v])=>{
+      const el = $("tiempo-"+k); if(el) el.textContent = v || "Sin registrar";
+    });
+    asegurarVehiculos();
+    renderSeguridad();
+    renderDotaciones();
+    renderOtrasFuerzas();
+    renderVehiculos();
+  }
+
+  function calcularTotales(){
+    const totalP = state.dotaciones.reduce((a,d)=>a+Number(d.cantidad||0),0);
+    $("totalDotaciones").textContent = `Dotaciones: ${state.dotaciones.length} · Personal total: ${totalP}`;
+  }
+
+  document.addEventListener("input",e=>{
+    const t=e.target;
+    if(t.dataset.fuerza!==undefined){
+      const i=Number(t.dataset.fuerza);
+      state.otrasFuerzas[i][t.dataset.ffield]=t.value;
+      guardar();
+    }
+    if(t.dataset.dot!==undefined){
+      const i=Number(t.dataset.dot); state.dotaciones[i][t.dataset.field]=t.type==="number"?Number(t.value):t.value;
+      calcularTotales(); guardar();
+    }
+    if(t.dataset.veh!==undefined){
+      const i=Number(t.dataset.veh); state.vehiculos[i][t.dataset.vfield]=t.value; guardar();
+    }
+    if(t.dataset.victim!==undefined){
+      const vi=Number(t.dataset.victim), vci=Number(t.dataset.victimIndex);
+      state.vehiculos[vi].victimas[vci][t.dataset.victimField]=t.value; guardar();
+    }
+    if(["direccion","tipoSiniestro","otroSiniestro","oficialCargo","jefeRescate","encargadoTriage","encargadoSeguridad","observaciones","fuerza-sc-movil","fuerza-sc-cargo","fuerza-policia-movil","fuerza-policia-cargo","fuerza-local-movil","fuerza-local-cargo","fuerza-transito-movil","fuerza-transito-cargo"].includes(t.id)) guardar();
+  });
+
+  document.addEventListener("change",e=>{
+    const t=e.target;
+    if(t.dataset.seg!==undefined){ state.seguridad[t.dataset.seg]=t.checked; guardar(); }
+    if(t.dataset.man!==undefined){
+      const vi=Number(t.dataset.man), mi=Number(t.dataset.manIndex);
+      state.vehiculos[vi].maniobras = state.vehiculos[vi].maniobras || {};
+      state.vehiculos[vi].maniobras[mi]=t.checked; guardar();
+    }
+    if(t.dataset.veh!==undefined || t.dataset.victim!==undefined) t.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+
+  document.addEventListener("click",e=>{
+    const t=e.target;
+
+    if(t.id==="vehMas"){
+      state.cantidadVehiculos=Math.min(12,state.cantidadVehiculos+1);
+      asegurarVehiculos(); renderVehiculos(); guardar();
+    }
+    if(t.id==="vehMenos"){
+      state.cantidadVehiculos=Math.max(1,state.cantidadVehiculos-1);
+      asegurarVehiculos(); renderVehiculos(); guardar();
+    }
+    if(t.id==="btnAgregarFuerza"){
+      state.otrasFuerzas.push({nombre:"",movil:"",cargo:""});
+      renderOtrasFuerzas();
+      guardar();
+    }
+    if(t.dataset.eliminarFuerza!==undefined){
+      state.otrasFuerzas.splice(Number(t.dataset.eliminarFuerza),1);
+      renderOtrasFuerzas();
+      guardar();
+    }
+    if(t.id==="btnAgregarDotacion"){
+      state.dotaciones.push({movil:"",cargo:"",cantidad:0});
+      renderDotaciones(); guardar();
+    }
+    if(t.dataset.eliminarDot!==undefined){
+      state.dotaciones.splice(Number(t.dataset.eliminarDot),1);
+      renderDotaciones(); guardar();
+    }
+    if(t.dataset.primerAcceso!==undefined){
+      const vi=Number(t.dataset.primerAcceso);
+      state.vehiculos[vi].primerAcceso=horaAhora();
+      renderVehiculos(); guardar();
+    }
+    if(t.dataset.vicMas!==undefined){
+      const vi=Number(t.dataset.vicMas);
+      state.vehiculos[vi].cantidadVictimas=Math.min(12,state.vehiculos[vi].cantidadVictimas+1);
+      asegurarVehiculos(); renderVehiculos(); guardar();
+    }
+    if(t.dataset.vicMenos!==undefined){
+      const vi=Number(t.dataset.vicMenos);
+      state.vehiculos[vi].cantidadVictimas=Math.max(0,state.vehiculos[vi].cantidadVictimas-1);
+      asegurarVehiculos(); renderVehiculos(); guardar();
+    }
+    if(t.dataset.liberacion!==undefined){
+      const [vi,vci]=t.dataset.liberacion.split("-").map(Number);
+      state.vehiculos[vi].victimas[vci].liberacion=horaAhora();
+      renderVehiculos(); guardar();
+    }
+    if(t.dataset.extraccion!==undefined){
+      const [vi,vci]=t.dataset.extraccion.split("-").map(Number);
+      state.vehiculos[vi].victimas[vci].extraccion=horaAhora();
+      renderVehiculos(); guardar();
+    }
+    if(t.id==="btnLlegadaLugar"){
+      state.tiemposGenerales.llegada=horaAhora();
+      $("tiempo-llegada").textContent=state.tiemposGenerales.llegada;
+      guardar();
+    }
+  });
+
+  $("btnFechaHora").addEventListener("click",()=>{
+    state.fechaHora=fechaHoraAhora();
+    $("fechaHoraTxt").textContent=state.fechaHora;
+    guardar();
+  });
+
+  $("btnUbicacion").addEventListener("click",()=>{
+    const box=$("ubicacionTxt");
+    if(!navigator.geolocation){
+      box.textContent="Este navegador no permite obtener ubicación.";
+      return;
+    }
+    box.textContent="Obteniendo ubicación...";
+    navigator.geolocation.getCurrentPosition(pos=>{
+      state.ubicacion={
+        lat:pos.coords.latitude.toFixed(6),
+        lng:pos.coords.longitude.toFixed(6),
+        acc:Math.round(pos.coords.accuracy)
+      };
+      box.innerHTML=`Lat: ${state.ubicacion.lat}<br>Long: ${state.ubicacion.lng}<br>Precisión: ±${state.ubicacion.acc} m`;
+      guardar();
+    },err=>{
+      box.textContent="No se pudo obtener la ubicación. Verificá el permiso de ubicación del navegador.";
+      console.warn(err);
+    },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+  });
+
+  $("btnImprimir").addEventListener("click",()=>{
+    guardar();
+    window.print();
+  });
+
+  $("btnNueva").addEventListener("click",()=>{
+    if(confirm("¿Iniciar una nueva intervención? Se borrarán todos los datos guardados.")){
+      storageBorrar(STORAGE_KEY);
+      location.reload();
+    }
+  });
+
+  cargar();
+})();
+</script>
+</body>
+</html>
