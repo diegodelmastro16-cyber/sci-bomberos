@@ -182,6 +182,19 @@
 
         @media print {
             body { background-color: white !important; color: black !important; padding: 0; }
+
+            /* Safari/iOS puede conservar el color blanco de títulos y etiquetas.
+               Forzamos negro en todo el contenido imprimible, incluso estilos inline. */
+            body *,
+            .card *,
+            .time-row *,
+            .resource-container *,
+            .depto-item *,
+            .piso-collapse *,
+            .dir-box * {
+                color: #000000 !important;
+                -webkit-text-fill-color: #000000 !important;
+            }
             .save-indicator, .modal { display: none !important; }
             input.print-prepared, select.print-prepared, textarea.print-prepared { display: none !important; }
             .print-field-value {
