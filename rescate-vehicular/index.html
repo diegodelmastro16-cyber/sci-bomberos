@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SCI - Rescate Vehicular V1.5</title>
+  <title>SCI - Rescate Vehicular V1.6</title>
   <meta name="theme-color" content="#111111">
   <style>
     :root{
@@ -223,8 +223,20 @@
     @media(max-width:620px){
       .grid-2,.grid-3,.check-grid,.photo-grid{grid-template-columns:1fr}
     }
+
+    .report-only{display:none}.report-page{background:#fff;color:#000;padding:18px;font-family:Arial,sans-serif}
+    .report-header{display:flex;align-items:center;gap:14px;border-bottom:3px solid #b00000;padding-bottom:10px;margin-bottom:14px}
+    .report-header img{width:78px;height:78px;object-fit:contain}.report-header-text{flex:1;text-align:center}
+    .report-header-title{font-size:1.3rem;font-weight:900;text-transform:uppercase}.report-header-subtitle{font-size:1rem;font-weight:700;margin-top:4px}
+    .report-section{margin:12px 0;page-break-inside:avoid}.report-section-title{font-weight:900;font-size:1rem;border-left:5px solid #b00000;padding:5px 8px;background:#efefef;margin-bottom:7px}
+    .report-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}.report-item{border-bottom:1px solid #bbb;padding:4px 0;font-size:.86rem}.report-label{font-weight:800}
+    .report-table{width:100%;border-collapse:collapse;font-size:.8rem}.report-table th,.report-table td{border:1px solid #888;padding:5px;vertical-align:top}.report-table th{background:#ececec}
+    .report-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.report-photo{border:1px solid #888;padding:6px;page-break-inside:avoid}.report-photo img{width:100%;max-height:260px;object-fit:contain;display:block}.report-photo-caption{font-size:.76rem;margin-top:5px}.report-note{white-space:pre-wrap;border:1px solid #aaa;padding:8px;min-height:50px;font-size:.86rem}
+
     @media print{
       body{background:#fff!important;color:#000!important;padding:0}
+      body > .container{display:none!important}
+      .report-only{display:block!important}
       .container{max-width:none}
       .institution-header{
         background:#fff!important;
@@ -503,6 +515,7 @@
   </section>
 </div>
 
+<div id="reporteFinal" class="report-only"></div>
 <script>
 (function(){
   const STORAGE_KEY = "sci_rescate_vehicular_prueba_v1";
@@ -1233,8 +1246,25 @@
     }
   });
 
-  $("btnImprimir").addEventListener("click",()=>{
+
+  function valorCampo(id){const el=$(id);return el?(el.value||"—"):"—"}
+  function siNo(v){return v?"Sí":"No"}
+  async function construirReporteFinal(){
+    const fotos=(await leerFotosRegistros()).sort((a,b)=>a.fechaISO.localeCompare(b.fechaISO));
+    const llegada=(state.tiemposGenerales&&state.tiemposGenerales.llegada)||"—";
+    const fuerzas=[["Seguridad Ciudadana","fuerza-sc-movil","fuerza-sc-cargo","sc"],["Policía","fuerza-policia-movil","fuerza-policia-cargo","policia"],["Policía Local","fuerza-local-movil","fuerza-local-cargo","local"],["Tránsito","fuerza-transito-movil","fuerza-transito-cargo","transito"]];
+    const filasF=fuerzas.map(f=>`<tr><td>${esc(f[0])}</td><td>${esc(valorCampo(f[1]))}</td><td>${esc(valorCampo(f[2]))}</td><td>${esc((state.arribosFuerzas&&state.arribosFuerzas[f[3]])||"—")}</td></tr>`).join("")+(state.otrasFuerzas||[]).map(f=>`<tr><td>${esc(f.nombre||"Otra fuerza")}</td><td>${esc(f.movil||"—")}</td><td>${esc(f.cargo||"—")}</td><td>${esc(f.arribo||"—")}</td></tr>`).join("");
+    const filasD=(state.dotaciones||[]).map((d,i)=>`<tr><td>${i+1}</td><td>${esc(d.movil||"—")}</td><td>${esc(d.cargo||"—")}</td><td>${esc(d.cantidad||0)}</td></tr>`).join("");
+    const seg=seguridadItems.map((x,i)=>`<div class="report-item"><span class="report-label">${esc(x)}:</span> ${siNo(state.seguridad&&state.seguridad[i])}</div>`).join("");
+    const veh=(state.vehiculos||[]).map((v,vi)=>{const man=maniobrasItems.filter((m,mi)=>v.maniobras&&v.maniobras[mi]).join(", ")||"—";const vic=(v.victimas||[]).map((x,xi)=>`<tr><td>${xi+1}</td><td>${esc(x.identificacion||"—")}</td><td>${esc(x.ubicacion||"—")}</td><td>${esc(x.estado||"—")}</td><td>${esc(x.atrapamiento||"—")}</td><td>${esc(x.prioridad||"—")}</td><td>${esc(x.liberacion||"—")}</td><td>${esc(x.extraccion||"—")}</td></tr>`).join("");return `<div class="report-section"><div class="report-section-title">Vehículo ${vi+1}</div><div class="report-grid"><div class="report-item"><span class="report-label">Dominio:</span> ${esc(v.dominio||"—")}</div><div class="report-item"><span class="report-label">Marca:</span> ${esc(v.marca||"—")}</div><div class="report-item"><span class="report-label">Modelo:</span> ${esc(v.modelo||"—")}</div><div class="report-item"><span class="report-label">Año:</span> ${esc(v.anio||"—")}</div><div class="report-item"><span class="report-label">Color:</span> ${esc(v.color||"—")}</div><div class="report-item"><span class="report-label">Tipo:</span> ${esc(v.tipo||"—")}</div><div class="report-item"><span class="report-label">Posición:</span> ${esc(v.posicion||"—")}</div><div class="report-item"><span class="report-label">Energía:</span> ${esc(v.energia||"—")}</div><div class="report-item"><span class="report-label">Primer acceso:</span> ${esc(v.primerAcceso||"—")}</div><div class="report-item"><span class="report-label">Estabilización:</span> ${esc(v.estabilizacion||"—")}</div></div><div class="report-item"><span class="report-label">Maniobras:</span> ${esc(man)}</div><div class="report-item"><span class="report-label">Otras maniobras:</span> ${esc(v.otrasManiobras||"—")}</div>${vic?`<table class="report-table" style="margin-top:8px"><thead><tr><th>Víct.</th><th>Identificación</th><th>Ubicación</th><th>Estado</th><th>Atrapamiento</th><th>Prioridad</th><th>Liberación</th><th>Extracción</th></tr></thead><tbody>${vic}</tbody></table>`:""}</div>`}).join("");
+    const fotosH=fotos.map((f,i)=>`<div class="report-photo"><img src="${f.dataUrl}"><div class="report-photo-caption"><b>Foto ${i+1}</b> · ${esc(f.categoria)}${f.vehiculoTexto?" · "+esc(f.vehiculoTexto):""}<br>${esc(f.descripcion||"Sin descripción")}<br>${esc(f.fechaTexto)}</div></div>`).join("");
+    const logo=document.querySelector('.institution-logo');
+    $('reporteFinal').innerHTML=`<div class="report-page"><div class="report-header">${logo?`<img src="${logo.src}">`:""}<div class="report-header-text"><div class="report-header-title">Bomberos Voluntarios de Río Tercero</div><div class="report-header-subtitle">Informe de Rescate Vehicular</div></div></div><div class="report-section"><div class="report-section-title">1. Datos del incidente</div><div class="report-grid"><div class="report-item"><span class="report-label">Dirección:</span> ${esc(valorCampo('direccion'))}</div><div class="report-item"><span class="report-label">Fecha y hora:</span> ${esc(state.fechaHora||'—')}</div><div class="report-item"><span class="report-label">Llegada:</span> ${esc(llegada)}</div><div class="report-item"><span class="report-label">Tipo:</span> ${esc(valorCampo('tipoSiniestro'))}</div><div class="report-item"><span class="report-label">Otro:</span> ${esc(valorCampo('otroSiniestro'))}</div><div class="report-item"><span class="report-label">Vehículos:</span> ${esc(state.cantidadVehiculos)}</div><div class="report-item"><span class="report-label">GPS:</span> ${state.ubicacion?`Lat. ${esc(state.ubicacion.lat)} / Long. ${esc(state.ubicacion.lng)} / ±${esc(state.ubicacion.acc)} m`:'—'}</div></div></div><div class="report-section"><div class="report-section-title">2. Organización</div><div class="report-grid"><div class="report-item"><span class="report-label">Oficial a cargo:</span> ${esc(valorCampo('oficialCargo'))}</div><div class="report-item"><span class="report-label">Jefe de Rescate:</span> ${esc(valorCampo('jefeRescate'))}</div><div class="report-item"><span class="report-label">TRIAGE:</span> ${esc(valorCampo('encargadoTriage'))}</div><div class="report-item"><span class="report-label">Seguridad:</span> ${esc(valorCampo('encargadoSeguridad'))}</div></div></div><div class="report-section"><div class="report-section-title">3. Fuerzas presentes</div><table class="report-table"><thead><tr><th>Fuerza</th><th>Móvil</th><th>A cargo</th><th>Arribo</th></tr></thead><tbody>${filasF||'<tr><td colspan="4">Sin datos</td></tr>'}</tbody></table></div><div class="report-section"><div class="report-section-title">4. Seguridad de la escena</div><div class="report-grid">${seg}</div></div><div class="report-section"><div class="report-section-title">5. Recursos / Dotaciones</div><table class="report-table"><thead><tr><th>N.º</th><th>Móvil</th><th>A cargo</th><th>Personal</th></tr></thead><tbody>${filasD||'<tr><td colspan="4">Sin dotaciones</td></tr>'}</tbody></table></div>${veh}<div class="report-section"><div class="report-section-title">7. Registro fotográfico</div><div class="report-photo-grid">${fotosH||'<div class="report-item">Sin fotografías.</div>'}</div></div><div class="report-section"><div class="report-section-title">8. Observaciones finales</div><div class="report-note">${esc(valorCampo('observaciones'))}</div></div></div>`;
+  }
+
+  $("btnImprimir").addEventListener("click",async()=>{
     guardar();
+    await construirReporteFinal();
     window.print();
   });
 
